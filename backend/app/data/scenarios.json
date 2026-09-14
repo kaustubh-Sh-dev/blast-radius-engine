@@ -1,0 +1,18 @@
+[
+  {
+    "id": "scenario-ripple-effect",
+    "title": "The Supply Chain Ripple Effect (Core Thesis)",
+    "description": "Compares Package A (Critical CVSS in leaf tool) vs Package B (Medium CVSS in foundational auth helper). Demonstrates how downstream reach and structural choke points invert remediation priorities.",
+    "targetA": "xml-entity-parser",
+    "targetB": "session-crypt-helper",
+    "takeaway": "Package A (CVSS 9.8 Critical) affects only 1 internal offline tool. Package B (CVSS 5.3 Medium) ripples through auth-core and token-validator to compromise 3 mission-critical Tier-1 production applications. Package B is mathematically and architecturally ranked Priority #1."
+  },
+  {
+    "id": "scenario-sql-sanitizer",
+    "title": "High Severity with Moderate Blast Radius",
+    "description": "Examines sql-sanitizer (CVSS 7.5 High) which passes through db-pool to reach Payment Gateway and Inventory API.",
+    "targetA": "sql-sanitizer",
+    "targetB": "xml-entity-parser",
+    "takeaway": "While sql-sanitizer has a lower CVSS than xml-entity-parser (7.5 vs 9.8), its propagation path penetrates direct database connectivity to 2 Tier-1 applications."
+  }
+]

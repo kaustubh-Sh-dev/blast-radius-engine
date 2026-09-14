@@ -1,0 +1,310 @@
+{
+  "ecosystem": "Enterprise Cloud Commerce Ecosystem (Deterministic Curated Dataset)",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "payment-gateway",
+      "name": "Payment Gateway Service",
+      "version": "3.2.0",
+      "type": "application",
+      "tier": "production",
+      "description": "Core PCI-DSS compliant credit card and payment processing microservice",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "user-portal",
+      "name": "Customer Web Portal",
+      "version": "4.1.0",
+      "type": "application",
+      "tier": "production",
+      "description": "Public customer account authentication, profile and order management dashboard",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "inventory-api",
+      "name": "Inventory & Order API",
+      "version": "2.9.1",
+      "type": "application",
+      "tier": "production",
+      "description": "High-throughput warehouse catalog and real-time inventory reservation API",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "legacy-report-generator",
+      "name": "Legacy Fiscal Report Tool",
+      "version": "1.0.4",
+      "type": "application",
+      "tier": "internal",
+      "description": "Isolated offline batch script for quarterly archived XML ledger generation",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "session-crypt-helper",
+      "name": "session-crypt-helper (Package B)",
+      "version": "2.1.0",
+      "type": "package",
+      "description": "Session encryption and token state persistence utility",
+      "vulnerability": {
+        "cveId": "SIM-VULN-SESSION-001",
+        "cvssScore": 5.3,
+        "cvssSeverity": "MEDIUM",
+        "summary": "Insecure pseudo-random seed in token generation allowing predictable session fixation and replay attacks"
+      }
+    },
+    {
+      "id": "xml-entity-parser",
+      "name": "xml-entity-parser (Package A)",
+      "version": "0.9.4",
+      "type": "package",
+      "description": "Legacy XML parsing and schema evaluation library",
+      "vulnerability": {
+        "cveId": "SIM-VULN-XML-001",
+        "cvssScore": 9.8,
+        "cvssSeverity": "CRITICAL",
+        "summary": "Remote Code Execution via unauthenticated XML External Entity (XXE) deserialization and prototype injection"
+      }
+    },
+    {
+      "id": "auth-core",
+      "name": "auth-core",
+      "version": "3.4.0",
+      "type": "package",
+      "description": "Central identity abstraction, claims verification and session policy enforcement",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "oauth-adapter",
+      "name": "oauth-adapter",
+      "version": "1.8.2",
+      "type": "package",
+      "description": "Federated OpenID Connect and OAuth2 client grant handler",
+      "vulnerability": {
+        "cveId": "SIM-VULN-OAUTH-001",
+        "cvssScore": 3.1,
+        "cvssSeverity": "LOW",
+        "summary": "Permissive redirect URI wildcard validation during local debug mode"
+      }
+    },
+    {
+      "id": "token-validator",
+      "name": "token-validator",
+      "version": "2.0.1",
+      "type": "package",
+      "description": "Lightweight JWT / HMAC stateless token validation middleware",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "db-pool",
+      "name": "db-pool",
+      "version": "4.1.0",
+      "type": "package",
+      "description": "Resilient connection pooling and read-replica routing driver",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "sql-sanitizer",
+      "name": "sql-sanitizer",
+      "version": "1.5.0",
+      "type": "package",
+      "description": "Query parameterization guard and dialect-specific escaping library",
+      "vulnerability": {
+        "cveId": "SIM-VULN-SQL-001",
+        "cvssScore": 7.5,
+        "cvssSeverity": "HIGH",
+        "summary": "Nested comment delimiter evasion causing parameter bypass in legacy SQL dialects"
+      }
+    },
+    {
+      "id": "logging-facade",
+      "name": "logging-facade",
+      "version": "2.2.0",
+      "type": "package",
+      "description": "Structured JSON log formatter with PII redaction filters",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "cloud-metrics",
+      "name": "cloud-metrics",
+      "version": "1.0.4",
+      "type": "package",
+      "description": "Prometheus and OpenTelemetry metrics collector",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "json-serializer",
+      "name": "json-serializer",
+      "version": "3.1.2",
+      "type": "package",
+      "description": "Fast streaming JSON encoder and decoder",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "crypto-primitives",
+      "name": "crypto-primitives",
+      "version": "1.1.0",
+      "type": "package",
+      "description": "Base mathematical primitives for symmetric ciphers and hashing",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    },
+    {
+      "id": "legacy-xml-reader",
+      "name": "legacy-xml-reader",
+      "version": "0.5.1",
+      "type": "package",
+      "description": "Wrapper adapter for backward-compatible XML format ingestion",
+      "vulnerability": {
+        "cvssScore": 0.0,
+        "cvssSeverity": "NONE"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "crypto-primitives",
+      "target": "session-crypt-helper",
+      "dependencyType": "direct",
+      "specifier": "^1.0.0"
+    },
+    {
+      "source": "session-crypt-helper",
+      "target": "auth-core",
+      "dependencyType": "direct",
+      "specifier": "^2.0.0"
+    },
+    {
+      "source": "session-crypt-helper",
+      "target": "token-validator",
+      "dependencyType": "direct",
+      "specifier": "^2.0.0"
+    },
+    {
+      "source": "auth-core",
+      "target": "oauth-adapter",
+      "dependencyType": "direct",
+      "specifier": "^3.0.0"
+    },
+    {
+      "source": "auth-core",
+      "target": "payment-gateway",
+      "dependencyType": "direct",
+      "specifier": "^3.2.0"
+    },
+    {
+      "source": "oauth-adapter",
+      "target": "user-portal",
+      "dependencyType": "direct",
+      "specifier": "^1.8.0"
+    },
+    {
+      "source": "token-validator",
+      "target": "user-portal",
+      "dependencyType": "direct",
+      "specifier": "^2.0.0"
+    },
+    {
+      "source": "token-validator",
+      "target": "inventory-api",
+      "dependencyType": "direct",
+      "specifier": "^2.0.0"
+    },
+    {
+      "source": "sql-sanitizer",
+      "target": "db-pool",
+      "dependencyType": "direct",
+      "specifier": "^1.4.0"
+    },
+    {
+      "source": "db-pool",
+      "target": "payment-gateway",
+      "dependencyType": "direct",
+      "specifier": "^4.0.0"
+    },
+    {
+      "source": "db-pool",
+      "target": "inventory-api",
+      "dependencyType": "direct",
+      "specifier": "^4.0.0"
+    },
+    {
+      "source": "logging-facade",
+      "target": "auth-core",
+      "dependencyType": "direct",
+      "specifier": "^2.0.0"
+    },
+    {
+      "source": "logging-facade",
+      "target": "payment-gateway",
+      "dependencyType": "direct",
+      "specifier": "^2.1.0"
+    },
+    {
+      "source": "logging-facade",
+      "target": "user-portal",
+      "dependencyType": "direct",
+      "specifier": "^2.1.0"
+    },
+    {
+      "source": "cloud-metrics",
+      "target": "inventory-api",
+      "dependencyType": "direct",
+      "specifier": "^1.0.0"
+    },
+    {
+      "source": "json-serializer",
+      "target": "payment-gateway",
+      "dependencyType": "direct",
+      "specifier": "^3.0.0"
+    },
+    {
+      "source": "json-serializer",
+      "target": "inventory-api",
+      "dependencyType": "direct",
+      "specifier": "^3.0.0"
+    },
+    {
+      "source": "xml-entity-parser",
+      "target": "legacy-xml-reader",
+      "dependencyType": "direct",
+      "specifier": "^0.9.0"
+    },
+    {
+      "source": "legacy-xml-reader",
+      "target": "legacy-report-generator",
+      "dependencyType": "direct",
+      "specifier": "^0.5.0"
+    }
+  ]
+}
