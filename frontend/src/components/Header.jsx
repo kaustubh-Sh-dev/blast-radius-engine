@@ -6,7 +6,10 @@ export default function Header({
   selectedScenarioId,
   onSelectScenario,
   onResetSimulation,
-  isSimulating
+  isSimulating,
+  connectionStatus = 'CONNECTED',
+  isFallbackMode = false,
+  onRetryConnection
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -38,6 +41,14 @@ export default function Header({
     setDropdownOpen(false);
   };
 
+  const getStatusLabel = () => {
+    if (connectionStatus === 'LOADING') return 'CONNECTING...';
+    if (connectionStatus === 'RECONNECTING') return 'ENGINE RECONNECTING';
+    if (connectionStatus === 'OFFLINE') return 'ENGINE OFFLINE';
+    if (isSimulating) return 'SIMULATION ACTIVE';
+    return 'ENGINE READY';
+  };
+
   return (
     <header className="console-header">
       <div className="brand-section">
@@ -56,9 +67,20 @@ export default function Header({
       </div>
 
       {/* Mandatory Simulated Data Disclosure Badge */}
-      <div className="simulated-disclosure-badge" title="Notice: This dataset is synthetic/curated for reproducible prototype demonstration">
+      <div
+        className={`simulated-disclosure-badge ${isFallbackMode ? 'fallback-mode' : ''}`}
+        title={
+          isFallbackMode
+            ? 'Notice: Running in offline demo fallback mode with deterministic data.'
+            : 'Notice: This dataset is synthetic/curated for reproducible prototype demonstration'
+        }
+      >
         <span className="sim-dot"></span>
-        <span>SIMULATED ECOSYSTEM • DETERMINISTIC DEMO DATA</span>
+        <span>
+          {isFallbackMode
+            ? 'OFFLINE DEMO MODE • DETERMINISTIC DATA'
+            : 'SIMULATED ECOSYSTEM • DETERMINISTIC DEMO DATA'}
+        </span>
       </div>
 
       <div className="header-controls">
@@ -142,9 +164,25 @@ export default function Header({
           Reset View
         </button>
 
-        <div className="system-status">
+        {isFallbackMode && onRetryConnection && (
+          <button
+            className="btn-cyber-secondary"
+            onClick={onRetryConnection}
+            title="Attempt to reconnect to live FastAPI backend"
+            style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+          >
+            Reconnect API
+          </button>
+        )}
+
+        <div
+          className={`system-status status-${connectionStatus.toLowerCase()}`}
+          title={isFallbackMode ? 'Backend offline (using deterministic fallback data). Click to reconnect.' : 'Backend connection healthy'}
+          onClick={isFallbackMode && onRetryConnection ? onRetryConnection : undefined}
+          style={isFallbackMode ? { cursor: 'pointer' } : undefined}
+        >
           <span className="status-dot"></span>
-          <span>{isSimulating ? 'SIMULATION ACTIVE' : 'ENGINE READY'}</span>
+          <span>{getStatusLabel()}</span>
         </div>
       </div>
     </header>

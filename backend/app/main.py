@@ -1,7 +1,9 @@
+import os
 import json
 from pathlib import Path
 from typing import List, Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.schemas import (
@@ -34,20 +36,43 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for frontend Vite dev server
+# Minimal explicit CORS allowlist for production and local development
+raw_cors = os.getenv(
+    "CORS_ORIGINS",
+    "https://blast-radius-engine.vercel.app,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000"
+)
+allowed_origins = [origin.strip() for origin in raw_cors.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """
+    Ensure internal server errors return structured JSON with CORS headers
+    rather than unhandled proxy-level drops.
+    """
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin and origin in allowed_origins:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+        headers=headers
+    )
+
 SCENARIOS_FILE = Path(__file__).resolve().parent / "data" / "scenarios.json"
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "service": "Blast Radius Engine Backend", "version": "1.0.0"}
+    return {"status": "ok", "service": "blast-radius-engine"}
 
 @app.get("/api/graph", response_model=GraphResponse)
 def get_graph():

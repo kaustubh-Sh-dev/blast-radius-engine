@@ -345,12 +345,44 @@ body {
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
 }
 .status-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--color-success);
+}
+.system-status.status-loading,
+.system-status.status-reconnecting {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.system-status.status-loading .status-dot,
+.system-status.status-reconnecting .status-dot {
+  background: #f59e0b;
+  animation: pulse-reconnect 1.5s infinite;
+}
+.system-status.status-offline {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.08);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+.system-status.status-offline .status-dot {
+  background: #f43f5e;
+}
+.simulated-disclosure-badge.fallback-mode {
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #fb7185;
+  background: rgba(244, 63, 94, 0.08);
+}
+.simulated-disclosure-badge.fallback-mode .sim-dot {
+  background: #f43f5e;
+}
+@keyframes pulse-reconnect {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
 }
 
 /* ----------------------------------------------------

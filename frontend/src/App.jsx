@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import GraphCanvas from './components/GraphCanvas';
 import InspectorPanel from './components/InspectorPanel';
@@ -7,8 +7,10 @@ import {
   fetchScenarios,
   simulateCompromise,
   fetchMitigationRankings,
-  fetchExplanation
+  fetchExplanation,
+  checkHealth
 } from './services/api';
+import { fallbackData } from './data/fallbackData';
 
 export default function App() {
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
@@ -20,49 +22,86 @@ export default function App() {
   const [simulation, setSimulation] = useState(null);
   const [explanation, setExplanation] = useState(null);
   const [activeFocusPath, setActiveFocusPath] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState('LOADING'); // 'LOADING' | 'CONNECTED' | 'RECONNECTING' | 'OFFLINE'
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load initial ecosystem data
-  useEffect(() => {
-    async function initData() {
-      try {
-        setLoading(true);
-        const [graphRes, scenariosRes, rankingsRes] = await Promise.all([
-          fetchGraph(),
-          fetchScenarios(),
-          fetchMitigationRankings()
+  // Load ecosystem data (live backend first, deterministic fallback on failure)
+  const loadData = useCallback(async (isManualRetry = false) => {
+    try {
+      if (isManualRetry) {
+        setConnectionStatus('RECONNECTING');
+      }
+
+      const [graphRes, scenariosRes, rankingsRes] = await Promise.all([
+        fetchGraph(),
+        fetchScenarios(),
+        fetchMitigationRankings()
+      ]);
+
+      setGraphData(graphRes);
+      setScenarios(scenariosRes);
+      setRankings(rankingsRes.rankings || []);
+      setConnectionStatus('CONNECTED');
+      setIsFallbackMode(false);
+      setError(null);
+
+      // Default to Package B (session-crypt-helper) to immediately showcase core thesis
+      const defaultTarget = 'session-crypt-helper';
+      const defaultNode = graphRes.nodes.find((n) => n.id === defaultTarget);
+      if (defaultNode) {
+        setSelectedNodeId(defaultTarget);
+        setSelectedNode(defaultNode);
+        setSelectedScenarioId('scenario-ripple-effect');
+
+        const [simRes, expRes] = await Promise.all([
+          simulateCompromise(defaultTarget),
+          fetchExplanation(defaultTarget)
         ]);
+        setSimulation(simRes);
+        setExplanation(expRes);
+      }
+    } catch (err) {
+      console.warn('Backend unavailable, activating deterministic offline fallback mode:', err);
+      setConnectionStatus('OFFLINE');
+      setIsFallbackMode(true);
+      setError(null);
 
-        setGraphData(graphRes);
-        setScenarios(scenariosRes);
-        setRankings(rankingsRes.rankings || []);
+      // Populate deterministic fallback dataset
+      setGraphData(fallbackData.graph);
+      setScenarios(fallbackData.scenarios);
+      setRankings(fallbackData.rankings.rankings || []);
 
-        // Default to Package B (session-crypt-helper) to immediately showcase core thesis
-        const defaultTarget = 'session-crypt-helper';
-        const defaultNode = graphRes.nodes.find((n) => n.id === defaultTarget);
-        if (defaultNode) {
-          setSelectedNodeId(defaultTarget);
-          setSelectedNode(defaultNode);
-          setSelectedScenarioId('scenario-ripple-effect');
-
-          const [simRes, expRes] = await Promise.all([
-            simulateCompromise(defaultTarget),
-            fetchExplanation(defaultTarget)
-          ]);
-          setSimulation(simRes);
-          setExplanation(expRes);
-        }
-      } catch (err) {
-        console.error('Failed to initialize engine:', err);
-        setError(err.message || 'Failed to connect to backend engine.');
-      } finally {
-        setLoading(false);
+      const defaultTarget = 'session-crypt-helper';
+      const defaultNode = fallbackData.graph.nodes.find((n) => n.id === defaultTarget);
+      if (defaultNode) {
+        setSelectedNodeId(defaultTarget);
+        setSelectedNode(defaultNode);
+        setSelectedScenarioId('scenario-ripple-effect');
+        setSimulation(fallbackData.simulations[defaultTarget] || null);
+        setExplanation(fallbackData.explanations[defaultTarget] || null);
       }
     }
-
-    initData();
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Periodic background health check when running in offline fallback mode
+  useEffect(() => {
+    if (!isFallbackMode) return;
+
+    const interval = setInterval(async () => {
+      const isAlive = await checkHealth();
+      if (isAlive) {
+        console.info('[Engine] Live FastAPI backend detected. Restoring live connection...');
+        loadData(true);
+      }
+    }, 25000);
+
+    return () => clearInterval(interval);
+  }, [isFallbackMode, loadData]);
 
   const handleSelectNode = async (nodeId) => {
     try {
@@ -71,7 +110,13 @@ export default function App() {
       setSelectedNode(targetNode || null);
       setActiveFocusPath(null);
 
-      // Run simulation and explanation
+      if (isFallbackMode) {
+        setSimulation(fallbackData.simulations[nodeId] || null);
+        setExplanation(fallbackData.explanations[nodeId] || null);
+        return;
+      }
+
+      // Live simulation and explanation
       const [simRes, expRes] = await Promise.all([
         simulateCompromise(nodeId),
         fetchExplanation(nodeId)
@@ -80,7 +125,11 @@ export default function App() {
       setSimulation(simRes);
       setExplanation(expRes);
     } catch (err) {
-      console.error(`Error simulating compromise for ${nodeId}:`, err);
+      console.warn(`Error querying live API for ${nodeId}, falling back to deterministic dataset:`, err);
+      setSimulation(fallbackData.simulations[nodeId] || null);
+      setExplanation(fallbackData.explanations[nodeId] || null);
+      setConnectionStatus('OFFLINE');
+      setIsFallbackMode(true);
     }
   };
 
@@ -105,6 +154,10 @@ export default function App() {
     setActiveFocusPath(null);
   };
 
+  const handleRetryConnection = () => {
+    loadData(true);
+  };
+
   return (
     <div className="console-app">
       <Header
@@ -113,15 +166,22 @@ export default function App() {
         onSelectScenario={handleSelectScenario}
         onResetSimulation={handleResetSimulation}
         isSimulating={Boolean(simulation)}
+        connectionStatus={connectionStatus}
+        isFallbackMode={isFallbackMode}
+        onRetryConnection={handleRetryConnection}
       />
 
       {error ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#ff3366', fontFamily: 'var(--font-mono)' }}>
           <h3>ENGINE CONNECTION ERROR</h3>
           <p style={{ marginTop: '10px', color: '#94a3b8' }}>{error}</p>
-          <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#64748b' }}>
-            Ensure the FastAPI backend is running on http://localhost:8000
-          </p>
+          <button
+            onClick={() => loadData(true)}
+            className="btn-cyber-secondary"
+            style={{ marginTop: '16px' }}
+          >
+            Retry Connection
+          </button>
         </div>
       ) : (
         <div className="console-body">

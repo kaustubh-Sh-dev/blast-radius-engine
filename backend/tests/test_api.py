@@ -8,6 +8,7 @@ def test_health_endpoint():
     assert res.status_code == 200
     data = res.json()
     assert data["status"] == "ok"
+    assert data["service"] == "blast-radius-engine"
 
 def test_graph_endpoint():
     res = client.get("/api/graph")
@@ -56,3 +57,38 @@ def test_explain_endpoint():
     assert exp["nodeId"] == "session-crypt-helper"
     assert exp["priorityRank"] == 1
     assert len(exp["rationales"]) >= 4
+
+def test_cors_headers_production_origin():
+    prod_origin = "https://blast-radius-engine.vercel.app"
+    endpoints = ["/api/health", "/api/graph", "/api/scenarios", "/api/mitigation-ranking"]
+    for ep in endpoints:
+        res = client.get(ep, headers={"Origin": prod_origin})
+        assert res.status_code == 200
+        assert res.headers.get("access-control-allow-origin") == prod_origin
+        assert res.headers.get("access-control-allow-credentials") == "true"
+
+def test_cors_preflight_options():
+    prod_origin = "https://blast-radius-engine.vercel.app"
+    headers = {
+        "Origin": prod_origin,
+        "Access-Control-Request-Method": "GET",
+        "Access-Control-Request-Headers": "Content-Type",
+    }
+    res = client.options("/api/graph", headers=headers)
+    assert res.status_code == 200
+    assert res.headers.get("access-control-allow-origin") == prod_origin
+    assert "GET" in res.headers.get("access-control-allow-methods", "")
+
+def test_cors_disallows_unauthorized_origin():
+    res = client.get("/api/health", headers={"Origin": "https://unauthorized-attacker.example.com"})
+    assert res.headers.get("access-control-allow-origin") != "https://unauthorized-attacker.example.com"
+
+def test_simulate_nonexistent_node_returns_404():
+    res = client.post("/api/simulate", json={"nodeId": "nonexistent-node-1234"})
+    assert res.status_code == 404
+    assert "not found" in res.json()["detail"].lower()
+
+def test_explain_nonexistent_node_returns_404():
+    res = client.get("/api/explain/nonexistent-node-1234")
+    assert res.status_code == 404
+    assert "not found" in res.json()["detail"].lower()
